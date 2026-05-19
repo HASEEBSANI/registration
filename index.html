@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retailer Registration & Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #eef2ff;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+      }
+      #registrationContainer { display: block; }
+      #loginPage, #dashboardPage { display: none; }
+    </style>
+</head>
+
+<body>
+
+    <div id="registrationContainer" class="w-full max-w-lg bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border border-indigo-100">
+
+        <div class="flex justify-between items-start mb-2">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-800">Retailer Registration</h1>
+                <p class="text-gray-500 text-sm mt-1">
+                    Please provide all necessary details and documents for verification.
+                </p>
+            </div>
+            <button type="button" onclick="showLoginPage()"
+                class="text-sm bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 h-fit mt-1">
+                Login
+            </button>
+        </div>
+        <form id="submissionForm" onsubmit="handleFormSubmit(event)">
+            <div class="space-y-4 mb-6 border-b pb-4 border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-700">Personal Details</h2>
+
+                <div>
+                    <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" required placeholder="Enter Your Full Name"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        oninput="this.value=this.value.toUpperCase()">
+                </div>
+
+                <div>
+                    <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                    <select id="gender" name="gender" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="" disabled selected>Select gender</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="emailId" class="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
+                    <input type="email" id="emailId" name="emailId" required placeholder="username@domain.com"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label for="mobileNumber" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                    <input type="tel" id="mobileNumber" name="mobileNumber" pattern="[0-9]{10}" maxlength="10" required
+                        placeholder="9876543210"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                </div>
+            </div>
+
+            <div class="space-y-4 mb-6 border-b pb-4 border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-700">Retailer Information</h2>
+
+                <div>
+                    <label for="miId" class="block text-sm font-medium text-gray-700 mb-1">Mi ID</label>
+                    <input type="number" id="miId" name="miId" maxlength="10" placeholder="Enter 10-digit Mi ID"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+                </div>
+
+                <div>
+                    <label for="retailerName" class="block text-sm font-medium text-gray-700 mb-1">Retailer Name</label>
+                    <input type="text" id="retailerName" name="retailerName" required placeholder="Enter Retailer Name"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        oninput="this.value=this.value.toUpperCase()">
+                </div>
+
+                <div>
+                    <label for="retailerAddress" class="block text-sm font-medium text-gray-700 mb-1">Retailer Address</label>
+                    <textarea id="retailerAddress" name="retailerAddress" rows="3" required placeholder="Enter Retailer Address"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                        oninput="this.value=this.value.toUpperCase()"></textarea>
+                </div>
+
+                <div>
+                    <label for="postalCode" class="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                    <input type="number" id="postalCode" name="postalCode" maxlength="6" required placeholder="110001"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)"
+          >
+                </div>
+
+                <div>
+                    <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                    <select id="state" name="state" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="" disabled selected>Select state</option>
+                        <option>Kerala</option>
+                        <option>Karnataka</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="googleMapLink" class="block text-sm font-medium text-gray-700 mb-1">Google Map Link</label>
+                    <input type="url" id="googleMapLink" name="googleMapLink" placeholder="https://maps.google.com/..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="space-y-4 mb-6 border-b pb-4 border-gray-100">
+                <div class="flex items-center space-x-2 mb-4">
+                    <input type="checkbox" id="gstAvailable" name="gstAvailable"
+                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                        onchange="toggleGSTFields(this)">
+                    <label for="gstAvailable" class="text-sm font-medium text-gray-700">GST Available</label>
+                </div>
+
+                <div>
+                    <label for="gstNo" class="block text-sm font-medium text-gray-700 mb-1">GST No</label>
+                    <input type="text" id="gstNo" name="gstNo" placeholder="32ABCDE1234F1Z8" disabled
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+                </div>
+
+                <div>
+                    <label for="panNo" class="block text-sm font-medium text-gray-700 mb-1">PAN No</label>
+                    <input type="text" id="panNo" name="panNo" placeholder="AAAPA1234A"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); validateSubmitButton()">
+                </div>
+
+                <div>
+                    <label for="gstCertificate" class="block text-sm font-medium text-gray-700 mb-1">GST Certificate (Upload File)</label>
+                    <input type="file" id="gstCertificate" name="gstCertificate"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        disabled>
+                    <p class="mt-1 text-xs text-gray-400">Max file size 10MB (PDF/JPEG preferred).</p>
+                </div>
+
+                <div>
+                    <label for="panFile" class="block text-sm font-medium text-gray-700 mb-1">PAN Card (Upload File)</label>
+                    <input type="file" id="panFile" name="panFile"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    onchange="validateSubmitButton()"
+                    required>
+                    <p class="mt-1 text-xs text-gray-400">Max file size 10MB (PDF/JPEG preferred).</p>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" id="submitButton"
+                    class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition">Register Retailer</button>
+            </div>
+            <div id="statusMessage" class="text-center font-semibold mt-2 min-h-6"></div>
+        </form>
+    </div>
+
+    <div id="loginPage" class="w-full max-w-md bg-white p-6 rounded-2xl shadow-2xl border border-indigo-100" style="display:none;">
+        <h2 class="text-2xl font-extrabold text-indigo-800 mb-4 text-center">Admin Login</h2>
+        <div class="space-y-4">
+            <input id="username" type="text" placeholder="Username" class="w-full border border-gray-300 rounded-lg px-4 py-2" />
+            <div class="relative">
+                <input id="password" type="password" placeholder="Password" class="w-full border border-gray-300 rounded-lg px-4 py-2" />
+                <button type="button" id="togglePassword" class="absolute right-3 top-2.5 text-gray-500 hover:text-indigo-600">👁</button>
+            </div>
+            <button onclick="login()" class="w-full bg-indigo-600 text-white py-2 rounded-lg">Login</button>
+            <p id="loginStatus" class="text-center text-red-500 text-sm"></p>
+            <button onclick="showRegistrationForm()" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg">Back to Registration</button>
+        </div>
+    </div>
+
+
+   <div id="dashboardPage" class="w-full min-h-screen bg-orange-100 p-6" style="display:none;">
+    <div class="bg-white p-6 rounded-2xl shadow mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-700">Dashboard</h1>
+                <!-- Live date & time under heading -->
+                <p id="currentDateTime" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="logout()" class="px-4 py-2 bg-red-500 text-white rounded-lg w-full sm:w-auto">Logout</button>
+            </div>
+        </div>
+        <div class="mt-4 text-gray-700 font-semibold">
+            Total Retailers: <span id="totalCount">0</span>
+        </div>
+    </div>
+
+
+        <div class="mt-6">
+
+            <div class="bg-white shadow p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h2 class="text-xl font-bold text-indigo-700">Recent Retailer Submissions</h2>
+                <button id="downloadExcelBtn" 
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm w-full sm:w-auto">
+                    Download (Excel)
+                </button>
+            </div>
+            <br/>
+            <div id="searchContainer" class="w-full max-w-5xl bg-transparent p-0 mb-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-2">
+        <input type="text" id="searchRetailerInput" placeholder="Search by Retailer Name"
+            class="w-full sm:w-1/3 px-3 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            oninput="applyFilters()">
+
+        <input type="text" id="searchMobileInput" placeholder="Search by Mobile Number"
+            class="w-full sm:w-1/3 px-3 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            oninput="applyFilters()">
+
+        <input type="text" id="searchMiIdInput" placeholder="Search by Mi ID"
+            class="w-full sm:w-1/3 px-3 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            oninput="applyFilters()">
+
+        <button onclick="resetFilters()" 
+            class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">
+            Reset
+        </button>
+    </div>
+</div>
+
+
+            <div class="overflow-x-auto mt-3 bg-white shadow rounded-lg">
+                <table class="min-w-full border text-sm sm:text-base" id="dashboardTable">
+                    <thead class="bg-indigo-600 text-white text-xs sm:text-sm">
+                        <tr>
+                            <th class="p-2 text-center"><input type="checkbox" id="selectAll"></th>
+                            <th class="border p-2 text-center">SL No</th>
+                            <th class="border p-2">Retailer Name</th>
+                            <th class="border p-2">Mi ID</th>
+                            <th class="border p-2">GST No</th>
+                            <th class="border p-2 text-center">View</th>
+                            <th class="border p-2 text-center">Edit</th>
+                            <th class="border p-2 text-center">Delete</th>
+                            <th class="border p-2 text-center">GST File</th>
+                            <th class="border p-2 text-center">PAN File</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="recentSubmissionBody">
+                        </tbody>
+                </table>
+            </div>
+
+        </div>
+
+
+        <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between mt-4">
+            <button id="prevPageBtn" onclick="prevPage()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">Previous</button>
+            <div>
+                Page <input id="gotoPageInput" type="number" min="1" class="w-16 px-2 py-1 border rounded" onchange="gotoPage()" /> of <span id="totalPagesDisplay">1</span>
+            </div>
+            <button id="nextPageBtn" onclick="nextPage()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">Next</button>
+        </div>
+    </div>
+    
+    <div id="viewModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md sm:max-w-2xl overflow-auto">
+            <h3 class="text-xl font-bold mb-4 text-indigo-700">Retailer Details</h3>
+            <div id="viewDetails" class="space-y-2 max-h-96 overflow-y-auto"></div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="closeViewModal()" class="px-4 py-2 bg-gray-200 rounded">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md sm:max-w-2xl overflow-auto">
+            <h3 class="text-xl font-bold mb-4">Edit Retailer</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="text-sm">Retailer Name</label>
+                    <input id="editName" class="w-full border px-3 py-2 rounded" disabled/>
+                </div>
+                <div>
+                    <label class="text-sm">Owner Full Name</label>
+                    <input id="editFullName" class="w-full border px-3 py-2 rounded"/>
+                </div>
+                <div>
+                    <label class="text-sm">Mobile Number</label>
+                    <input id="editMobile" class="w-full border px-3 py-2 rounded"/>
+                </div>
+                <div>
+                    <label class="text-sm">State</label>
+                    <input id="editState" class="w-full border px-3 py-2 rounded"/>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-sm">Address</label>
+                    <textarea id="editAddress" class="w-full border px-3 py-2 rounded" rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="inline-flex items-center"><input type="checkbox" id="editGSTAvailable" class="mr-2"/> GST Available</label>
+                </div>
+                <div>
+                    <label class="text-sm">GST No</label>
+                    <input id="editGstNo" class="w-full border px-3 py-2 rounded"/>
+                </div>
+                <div>
+                    <label class="text-sm">PAN No</label>
+                    <input id="editPanNo" class="w-full border px-3 py-2 rounded"/>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2 justify-end">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 rounded w-full sm:w-auto">Cancel</button>
+                <button onclick="saveEditedRetailer()" class="px-4 py-2 bg-indigo-600 text-white rounded w-full sm:w-auto">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden p-4">
+        <div class="bg-white p-6 rounded shadow-md w-full max-w-sm sm:w-96">
+            <h2 class="text-lg font-bold mb-4">Confirm Delete</h2>
+            <p id="deleteMessage" class="mb-4">Are you sure you want to delete this retailer?</p>
+            <div class="flex flex-wrap justify-end gap-2">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-300 rounded w-full sm:w-auto">Cancel</button>
+                <button onclick="confirmDeleteAction()" class="px-4 py-2 bg-red-500 text-white rounded w-full sm:w-auto">Delete</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+
+<script>
+
+  const API_URL = "https://script.google.com/macros/s/AKfycbxnlWUS0tZowOPxSzOHHEkGzosPrBD9UgagyiI860bhNsLgdXqihKweXPDWbBrTTjtFLQ/exec";
+
+    /*******************************
+     * Form submit + file upload
+     *******************************/
+    function toggleGSTFields(checkbox) {
+
+    document.getElementById('gstNo').disabled = !checkbox.checked;
+    document.getElementById('gstCertificate').disabled = !checkbox.checked;
+
+    if (!checkbox.checked) {
+        document.getElementById('gstNo').value = '';
+        document.getElementById('gstCertificate').value = '';
+    }
+
+    validateSubmitButton();
+}
+
+    // Convert File to base64 object expected by Code.gs
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            if (!file) return resolve(null);
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1]; // remove data:*/*;base64,
+                resolve({ name: file.name, type: file.type, data: base64 });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function handleFormSubmit(e) {
+        e.preventDefault(); // stop reload
+
+        const status = document.getElementById('statusMessage');
+        const form = document.getElementById('submissionForm');
+        const retailerName = document.getElementById('retailerName').value.trim();
+
+        status.textContent = 'Saving...';
+        status.style.color = '#2563eb';
+
+        try {
+            const formData = {
+                fullName: document.getElementById('fullName').value.trim(),
+                gender: document.getElementById('gender').value,
+                emailId: document.getElementById('emailId').value.trim(),
+                mobileNumber: document.getElementById('mobileNumber').value.trim(),
+                miId: document.getElementById('miId').value.trim(),
+                retailerName: retailerName, // Used for renaming
+                retailerAddress: document.getElementById('retailerAddress').value.trim(),
+                postalCode: document.getElementById('postalCode').value.trim(),
+                state: document.getElementById('state').value,
+                googleMapLink: document.getElementById('googleMapLink').value.trim(),
+                gstAvailable: document.getElementById('gstAvailable').checked ? 'Yes' : 'No',
+                gstNo: document.getElementById('gstNo').value.trim(),
+                panNo: document.getElementById('panNo').value.trim(),
+            };
+
+            // Files
+            const gstFileInput = document.getElementById('gstCertificate').files[0];
+            const panFileInput = document.getElementById('panFile').files[0];
+
+            // Handle GST File Renaming
+            if (gstFileInput) {
+                const gstExt = gstFileInput.name.split('.').pop(); // Get original extension (pdf/jpg)
+                const gstBlob = await fileToBase64(gstFileInput);
+                gstBlob.name = `GST_${retailerName}.${gstExt}`; // Set new name
+                formData.gstCertificate = gstBlob;
+            }
+
+            // Handle PAN File Renaming
+            if (panFileInput) {
+                const panExt = panFileInput.name.split('.').pop(); // Get original extension
+                const panBlob = await fileToBase64(panFileInput);
+                panBlob.name = `PAN_${retailerName}.${panExt}`; // Set new name
+                formData.panFile = panBlob;
+            }
+
+            fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+        action: "processForm",
+        ...formData
+    })
+})
+.then(res => res.json())
+.then(function(resp){
+
+    status.textContent = resp.message || 'Retailer data saved successfully';
+
+    status.style.color = '#065f46';
+    status.style.background = '#d1fae5';
+    status.style.border = '1px solid #10b981';
+    status.style.padding = '10px';
+    status.style.borderRadius = '6px';
+
+    form.reset();
+
+    toggleGSTFields({ checked: false });
+
+    loadRecentSubmissions();
+
+})
+.catch(function(err){
+
+    status.textContent = 'Error: ' + err.message;
+
+    status.style.color = 'red';
+
+});
+
+        } catch (err) {
+            status.textContent = 'Error: ' + err.message;
+            status.style.color = 'red';
+        }
+    }
+
+    /***********************************************************
+     * Admin / Dashboard functions
+     ***********************************************************/
+    // Show/hide pages
+    function showLoginPage(){ document.getElementById('registrationContainer').style.display='none'; document.getElementById('loginPage').style.display='block'; document.getElementById('dashboardPage').style.display='none'; }
+    function showRegistrationForm(){ document.getElementById('registrationContainer').style.display='block'; document.getElementById('loginPage').style.display='none'; document.getElementById('dashboardPage').style.display='none'; }
+    function logout(){ showRegistrationForm(); document.getElementById('username').value=''; document.getElementById('password').value=''; document.getElementById('loginStatus').textContent = '';}
+
+    // Login (basic)
+    function login(){
+        const u = document.getElementById('username').value.trim();
+        const p = document.getElementById('password').value.trim();
+        if(u==='admin' && p==='admin'){
+            document.getElementById('loginPage').style.display='none';
+            document.getElementById('registrationContainer').style.display='none';
+            document.getElementById('dashboardPage').style.display='block';
+            loadRecentSubmissions(); // Load the dashboard data on successful login
+        } else {
+            document.getElementById('loginStatus').textContent = 'Invalid username or password';
+        }
+    }
+
+    // Toggle password visibility
+    document.addEventListener('click', function(e){
+        if (e.target && e.target.id === 'togglePassword') {
+            const p = document.getElementById("password");
+            p.type = p.type === "password" ? "text" : "password";
+        }
+    });
+
+
+    // ---------- Edit flow ----------
+    function openEditModal(name) {
+        if (!name) return alert('Please select a retailer to edit.');
+        // Call backend to get existing data
+        fetch(API_URL + "?action=getRetailerByName&name=" + encodeURIComponent(name))
+
+        .then(res => res.json())
+
+       .then(populateEditModal);
+    }
+
+    function populateEditModal(data) {
+        if (!data) return alert('Retailer not found');
+        
+        // Populate form fields. 'Retailer Name' is used as the key for update, so it's disabled.
+        document.getElementById('editName').value = data['Retailer Name'] || '';
+        document.getElementById('editFullName').value = data['Full Name'] || '';
+        document.getElementById('editMobile').value = data['Mobile Number'] || '';
+        document.getElementById('editAddress').value = data['Retailer Address'] || '';
+        document.getElementById('editState').value = data['State'] || '';
+        document.getElementById('editGSTAvailable').checked = (data['GST Available'] === 'Yes');
+        document.getElementById('editGstNo').value = data['GST No'] || '';
+        document.getElementById('editPanNo').value = data['PAN No'] || '';
+        
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+    function saveEditedRetailer() {
+        const updated = {
+            'Retailer Name': document.getElementById('editName').value.trim(), // Key field, MUST be present
+            'Full Name': document.getElementById('editFullName').value.trim(),
+            'Mobile Number': document.getElementById('editMobile').value.trim(),
+            'Retailer Address': document.getElementById('editAddress').value.trim(),
+            'State': document.getElementById('editState').value.trim(),
+            'GST Available': document.getElementById('editGSTAvailable').checked ? 'Yes' : 'No',
+            'GST No': document.getElementById('editGstNo').value.trim(),
+            'PAN No': document.getElementById('editPanNo').value.trim()
+            // Important: File uploads are complex to handle in edit. They are excluded here.
+        };
+        fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+        action: "updateRetailer",
+        updated: updated
+    })
+})
+
+.then(res => res.json())
+
+.then(function(msg){
+
+    alert(msg.message || 'Updated');
+
+    closeEditModal();
+
+    loadRecentSubmissions();
+
+})
+
+.catch(function(err){
+
+    alert('Error updating retailer');
+
+});
+    }
+
+    // ---------- Delete flow (modal) ----------
+    let selectedRetailerForDelete = null;
+
+    function showDeleteModal(name){
+        if (!name) return alert("Please select a retailer to delete.");
+        selectedRetailerForDelete = name;
+        document.getElementById('deleteMessage').textContent =
+            `Are you sure you want to delete retailer "${name}"? This cannot be undone.`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal(){
+        selectedRetailerForDelete = null;
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    function confirmDeleteAction(){
+      if (!selectedRetailerForDelete) return;
+       fetch(API_URL, {
+
+    method: "POST",
+
+    body: JSON.stringify({
+
+        action: "deleteRetailer",
+
+        name: selectedRetailerForDelete
+
+    })
+
+})
+
+.then(res => res.json())
+
+.then(function(msg){
+
+    alert(msg.message || "Deleted successfully");
+
+    closeDeleteModal();
+
+    loadRecentSubmissions();
+
+})
+
+.catch(function(err){
+
+    alert('Error deleting');
+
+});
+     }
+
+
+
+    /* Load latest 10 retailer submissions */
+    // ---------- Pagination & Recent Submissions ----------
+    let recentData = [];
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let totalPages = 1;
+
+    // Load recent submissions
+    function loadRecentSubmissions() {
+
+    fetch(API_URL + "?action=getRecentSubmissions")
+
+    .then(res => res.json())
+
+    .then(function(list){
+
+        recentData = list || [];
+
+        filteredData = [...recentData];
+
+        currentPage = 1;
+
+        totalPages = Math.ceil(recentData.length / rowsPerPage) || 1;
+
+        document.getElementById('totalCount').textContent =
+            recentData.length || 0;
+
+        renderPage();
+
+    })
+
+    .catch(function(err){
+
+        console.error(err);
+
+    });
+}
+
+
+    document.getElementById("downloadExcelBtn").addEventListener("click", downloadSelected);
+
+    function downloadSelected() {
+        const selectedRetailers = [];
+        document.querySelectorAll('.rowCheckbox:checked').forEach(checkbox => {
+            const index = parseInt(checkbox.getAttribute('data-row'));
+            selectedRetailers.push(recentData[index]);
+        });
+
+        if (selectedRetailers.length === 0) {
+            alert("No rows selected!");
+            return;
+        }
+
+        // Standard headers that must match your sheet order/keys for export
+        const headers = [
+            "Full Name", "Gender", "Email ID", "Mobile Number", "Mi ID", "Retailer Name", 
+            "Retailer Address", "Postal Code", "State", "Google Map Link", "GST Available", 
+            "GST No", "PAN No", "GST Certificate URL", "PAN File URL"
+        ];
+        
+        const dataForExport = [headers];
+
+        selectedRetailers.forEach(item => {
+            const row = headers.map(header => item[header] || "");
+            dataForExport.push(row);
+        });
+
+        // Create workbook using XLSX
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(dataForExport);
+        XLSX.utils.book_append_sheet(wb, ws, "Selected Retailers");
+
+        // Determine file name
+        let fileName = "retailers.xlsx";
+        if (selectedRetailers.length === 1) {
+            let retailerName = selectedRetailers[0]["Retailer Name"] || "single-retailer";
+            retailerName = retailerName.replace(/[/\\?%*:|"<>]/g, "_");
+            fileName = retailerName + ".xlsx";
+        }
+
+        // Save Excel file
+        XLSX.writeFile(wb, fileName);
+    }
+
+
+    // Pagination actions
+    function prevPage() { if (currentPage > 1) { currentPage--; renderPage(); } }
+    function nextPage() { if (currentPage < totalPages) { currentPage++; renderPage(); } }
+    function gotoPage() {
+        let page = parseInt(document.getElementById('gotoPageInput').value);
+        if (isNaN(page) || page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
+        renderPage();
+    }
+    document.getElementById('gotoPageInput').addEventListener('change', gotoPage);
+
+
+    // ---------- View Retailer Modal ----------
+    // View retailer details in modal
+    function viewRetailer(name) {
+        if (!name) return alert('No retailer selected');
+
+        fetch(API_URL + "?action=getRetailerByName&name=" + encodeURIComponent(name))
+
+        .then(res => res.json())
+
+        .then(function(data){
+            if (!data) {
+                alert('Retailer not found.');
+                return;
+            }
+
+            // Build modal content
+            let html = '';
+            // Sort keys to look better in modal (optional)
+            const sortedKeys = Object.keys(data).sort(); 
+
+            sortedKeys.forEach(k => {
+                const v = data[k];
+                if(k === "GST Certificate URL" && v){
+                    html += `<p><strong>${k}:</strong> <a href="${v}" target="_blank" class="text-indigo-600 underline text-sm">Download</a></p>`;
+                } else if(k === "PAN File URL" && v){
+                    html += `<p><strong>${k}:</strong> <a href="${v}" target="_blank" class="text-indigo-600 underline text-sm">Download</a></p>`;
+                } else {
+                    html += `<p><strong>${k}:</strong> ${v || '-'}</p>`;
+                }
+            });
+
+            document.getElementById('viewDetails').innerHTML = html;
+            document.getElementById('viewModal').classList.remove('hidden');
+
+        }).getRetailerByName(name);
+    }
+
+    // FIX: Completed the previously incomplete function
+    function closeViewModal() {
+        document.getElementById('viewModal').classList.add('hidden');
+    }
+
+    // Initial data load upon page load (if not logging in)
+    // Removed to prevent immediate execution, loadRecentSubmissions is called in login(). 
+    
+    let filteredData = []; // Global variable for filtered results
+
+function applyFilters() {
+    const nameVal = document.getElementById('searchRetailerInput').value.trim().toUpperCase();
+    const mobileVal = document.getElementById('searchMobileInput').value.trim();
+    const miIdVal = document.getElementById('searchMiIdInput').value.trim();
+
+    filteredData = recentData.filter(item => {
+        const matchesName = !nameVal || (item["Retailer Name"]?.toUpperCase().includes(nameVal));
+        const matchesMobile = !mobileVal || (item["Mobile Number"]?.includes(mobileVal));
+        const matchesMiId = !miIdVal || (item["Mi ID"]?.includes(miIdVal));
+        return matchesName && matchesMobile && matchesMiId;
+    });
+
+    currentPage = 1;
+    totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+    renderPage();
+}
+
+function resetFilters() {
+    document.getElementById('searchRetailerInput').value = '';
+    document.getElementById('searchMobileInput').value = '';
+    document.getElementById('searchMiIdInput').value = '';
+
+    filteredData = [...recentData]; // reset filteredData
+    currentPage = 1;
+    totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+    renderPage();
+}
+
+
+
+function renderPage() {
+    const isFiltering =
+    document.getElementById('searchRetailerInput').value.trim() ||
+    document.getElementById('searchMobileInput').value.trim() ||
+    document.getElementById('searchMiIdInput').value.trim();
+
+    const dataToRender = isFiltering ? filteredData : recentData;
+    const tbody = document.getElementById("recentSubmissionBody");
+    tbody.innerHTML = "";
+
+    if (!dataToRender.length) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center p-3">No submissions found</td></tr>`;
+        document.getElementById('totalPagesDisplay').textContent = 1;
+        document.getElementById('gotoPageInput').value = 1;
+        return;
+    }
+
+    // Calculate pagination
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = dataToRender.slice(start, end);
+
+    pageData.forEach((item, i) => {
+        tbody.innerHTML += `
+            <tr class="border-b hover:bg-gray-100">
+                <td class="px-2 py-2 border text-center">
+                    <input type="checkbox" class="rowCheckbox" data-row="${start + i}">
+                </td>
+                <td class="border p-2 text-center">${start + i + 1}</td>
+                <td class="border p-2">${item["Retailer Name"] || '-'}</td>
+                <td class="border p-2">${item["Mi ID"] || '-'}</td>
+                <td class="border p-2">${item["GST No"] || '-'}</td>
+                <td class="border p-2 text-center">
+                    <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                        onclick="viewRetailer('${item["Retailer Name"].replace(/'/g, "\\'")}')">View</button>
+                </td>
+                <td class="border p-2 text-center">
+                    <button class="bg-green-500 text-white px-2 py-1 rounded text-xs"
+                        onclick="openEditModal('${item["Retailer Name"].replace(/'/g, "\\'")}')">Edit</button>
+                </td>
+                <td class="border p-2 text-center">
+                    <button class="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                        onclick="showDeleteModal('${item["Retailer Name"].replace(/'/g, "\\'")}')">Delete</button>
+                </td>
+                <td class="border p-2 text-center">
+                    ${item["GST Certificate URL"]
+                        ? `<a class="text-indigo-600 underline text-xs" href="${item["GST Certificate URL"]}" target="_blank">Download</a>`
+                        : "-"}
+                </td>
+                <td class="border p-2 text-center">
+                    ${item["PAN File URL"]
+                        ? `<a class="text-indigo-600 underline text-xs" href="${item["PAN File URL"]}" target="_blank">Download</a>`
+                        : "-"}
+                </td>
+            </tr>
+        `;
+    });
+
+    // Update pagination display
+    totalPages = Math.ceil(dataToRender.length / rowsPerPage) || 1;
+    document.getElementById('totalPagesDisplay').textContent = totalPages;
+    document.getElementById('gotoPageInput').value = currentPage;
+}
+
+function updateDateTime() {
+    const now = new Date();
+    const options = { 
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
+        hour: '2-digit', minute: '2-digit', second: '2-digit' 
+    };
+    document.getElementById('currentDateTime').textContent = now.toLocaleString('en-IN', options);
+}
+
+// Update every second
+setInterval(updateDateTime, 1000);
+updateDateTime(); // Initial call
+validateSubmitButton();
+
+window.onload = function () {
+    validateSubmitButton();
+};
+
+function validateSubmitButton() {
+
+    const panNo = document.getElementById('panNo').value.trim();
+    const panFile = document.getElementById('panFile').files.length > 0;
+
+    const submitBtn = document.getElementById('submitButton');
+
+    // PAN No + PAN File mandatory
+    if (panNo !== '' && panFile) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+</script>
+</html>
