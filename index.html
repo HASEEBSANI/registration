@@ -713,40 +713,37 @@
         if (!name) return alert('No retailer selected');
 
         fetch(API_URL + "?action=getRetailerByName&name=" + encodeURIComponent(name))
-    .then(res => res.json())
-    .then(function(data){
 
-        if (!data) {
-            alert('Retailer not found.');
-            return;
-        }
+        .then(res => res.json())
 
-        let html = '';
-
-        Object.keys(data).sort().forEach(k => {
-
-            const v = data[k];
-
-            if(k === "GST Certificate URL" && v){
-                html += `<p><strong>${k}:</strong> <a href="${v}" target="_blank" class="text-indigo-600 underline text-sm">Download</a></p>`;
-            }
-            else if(k === "PAN File URL" && v){
-                html += `<p><strong>${k}:</strong> <a href="${v}" target="_blank" class="text-indigo-600 underline text-sm">Download</a></p>`;
-            }
-            else{
-                html += `<p><strong>${k}:</strong> ${v || '-'}</p>`;
+        .then(function(data){
+            if (!data) {
+                alert('Retailer not found.');
+                return;
             }
 
-        });
+            // Build modal content
+            let html = '';
+            // Sort keys to look better in modal (optional)
+            const sortedKeys = Object.keys(data).sort(); 
 
-        document.getElementById('viewDetails').innerHTML = html;
-        document.getElementById('viewModal').classList.remove('hidden');
+            sortedKeys.forEach(k => {
+                const v = data[k];
+                if(k === "GST Certificate URL" && v){
+                    html += `<p><strong>${k}:</strong> <a href="${v}" target="_blank" class="text-indigo-600 underline text-sm">Download</a></p>`;
+                } else if(k === "PAN File URL" && v){
+                    html += `<p><strong>${k}:</strong> <a href="${v}" target="_blank" class="text-indigo-600 underline text-sm">Download</a></p>`;
+                } else {
+                    html += `<p><strong>${k}:</strong> ${v || '-'}</p>`;
+                }
+            });
 
-    })
-    .catch(err => {
-        console.error(err);
-        alert('Error loading retailer');
-    });
+            document.getElementById('viewDetails').innerHTML = html;
+            document.getElementById('viewModal').classList.remove('hidden');
+
+        }).getRetailerByName(name);
+    }
+
     // FIX: Completed the previously incomplete function
     function closeViewModal() {
         document.getElementById('viewModal').classList.add('hidden');
@@ -860,68 +857,31 @@ function updateDateTime() {
     document.getElementById('currentDateTime').textContent = now.toLocaleString('en-IN', options);
 }
 
+// Update every second
+setInterval(updateDateTime, 1000);
+updateDateTime(); // Initial call
+validateSubmitButton();
+
+window.onload = function () {
+    validateSubmitButton();
+};
 
 function validateSubmitButton() {
 
-    const submitBtn = document.getElementById('submitButton');
-
-    // Required fields
-    const fullName = document.getElementById('fullName').value.trim();
-    const gender = document.getElementById('gender').value;
-    const emailId = document.getElementById('emailId').value.trim();
-    const mobileNumber = document.getElementById('mobileNumber').value.trim();
-    const miId = document.getElementById('miId').value.trim();
-    const retailerName = document.getElementById('retailerName').value.trim();
-    const retailerAddress = document.getElementById('retailerAddress').value.trim();
-    const postalCode = document.getElementById('postalCode').value.trim();
-    const state = document.getElementById('state').value;
     const panNo = document.getElementById('panNo').value.trim();
     const panFile = document.getElementById('panFile').files.length > 0;
 
-   let isValid =
-    fullName &&
-    gender &&
-    emailId &&
-    mobileNumber.length === 10 &&
-    miId &&
-    retailerName &&
-    retailerAddress &&
-    postalCode.length === 6 &&
-    state &&
-    panNo &&
-    panFile;
+    const submitBtn = document.getElementById('submitButton');
 
-    // GST validation
-    const gstChecked = document.getElementById('gstAvailable').checked;
-
-    if (gstChecked) {
-        const gstNo = document.getElementById('gstNo').value.trim();
-        const gstFile = document.getElementById('gstCertificate').files.length > 0;
-
-        isValid = isValid && gstNo && gstFile;
-    }
-
-    submitBtn.disabled = !isValid;
-
-    if (isValid) {
+    // PAN No + PAN File mandatory
+    if (panNo !== '' && panFile) {
+        submitBtn.disabled = false;
         submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     } else {
+        submitBtn.disabled = true;
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-
-    document.querySelectorAll(
-        '#submissionForm input, #submissionForm select, #submissionForm textarea'
-    ).forEach(el => {
-
-        el.addEventListener('input', validateSubmitButton);
-        el.addEventListener('change', validateSubmitButton);
-
-    });
-
-    validateSubmitButton();
-});
 </script>
 </html>
