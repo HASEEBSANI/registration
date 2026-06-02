@@ -868,17 +868,47 @@ window.onload = function () {
 
 function validateSubmitButton() {
 
+    const submitBtn = document.getElementById('submitButton');
+
+    // Required fields
+    const fullName = document.getElementById('fullName').value.trim();
+    const gender = document.getElementById('gender').value;
+    const emailId = document.getElementById('emailId').value.trim();
+    const mobileNumber = document.getElementById('mobileNumber').value.trim();
+    const retailerName = document.getElementById('retailerName').value.trim();
+    const retailerAddress = document.getElementById('retailerAddress').value.trim();
+    const postalCode = document.getElementById('postalCode').value.trim();
+    const state = document.getElementById('state').value;
     const panNo = document.getElementById('panNo').value.trim();
     const panFile = document.getElementById('panFile').files.length > 0;
 
-    const submitBtn = document.getElementById('submitButton');
+    let isValid =
+        fullName &&
+        gender &&
+        emailId &&
+        mobileNumber.length === 10 &&
+        retailerName &&
+        retailerAddress &&
+        postalCode.length === 6 &&
+        state &&
+        panNo &&
+        panFile;
 
-    // PAN No + PAN File mandatory
-    if (panNo !== '' && panFile) {
-        submitBtn.disabled = false;
+    // GST validation
+    const gstChecked = document.getElementById('gstAvailable').checked;
+
+    if (gstChecked) {
+        const gstNo = document.getElementById('gstNo').value.trim();
+        const gstFile = document.getElementById('gstCertificate').files.length > 0;
+
+        isValid = isValid && gstNo && gstFile;
+    }
+
+    submitBtn.disabled = !isValid;
+
+    if (isValid) {
         submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     } else {
-        submitBtn.disabled = true;
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
     }
 }
